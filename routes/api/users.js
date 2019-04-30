@@ -8,6 +8,7 @@ const passport = require("passport");
 
 //Load Input Validations
 const validateRegisterInput = require("../../validation/register");
+const validateLoginInput = require("../../validation/login");
 
 //Load User Model
 const User = require("../../models/User");
@@ -73,10 +74,10 @@ router.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  const { errors, isvalid } = validateRegisterInput(req.body);
+  const { errors, isValid } = validateLoginInput(req.body);
 
   //Check validation
-  if (!isvalid) {
+  if (!isValid) {
     return res.status(400).json(errors);
   }
 
