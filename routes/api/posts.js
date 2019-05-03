@@ -87,4 +87,71 @@ router.delete(
   }
 );
 
+// @route   POST api/post/like/:id
+// @desc    Like the post
+// @access  Private
+router.post(
+  "/like/:id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Profile.findOne({ user: req.user.id }).then(profile => {
+      Post.findById(req.params.id)
+        .then(post => {
+          if (
+            post.likes.filter(like => like.user.toString() === req.user.id)
+              .length > 0
+          ) {
+            return res
+              .status(400)
+              .json({ alreadyliked: "User already liked the post" });
+          }
+          post.likes.unshift({ user: req.user.id });
+
+          post
+            .save()
+            .then(post => res.json(post))
+            .catch(err => res.status(400).json(err));
+        })
+        .catch(err => res.status(400).json(err));
+    });
+  }
+);
+
+// @route   POST api/post/like/:id
+// @desc    UnLike the post
+// @access  Private
+router.post(
+  "/unlike/:id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Profile.findOne({ user: req.user.id }).then(profile => {
+      Post.findById(req.params.id)
+        .then(post => {
+          if (
+            post.likes.filter(like => like.user.toString() === req.user.id)
+              .length === 0
+          ) {
+            return res
+              .status(400)
+              .json({ alreadyliked: "User already unliked the post" });
+          }
+
+          // Get remove index
+          const removeindex = post.likes
+            .map(item => item.user.toString())
+            .indexOf(req.user.id);
+
+          // Splice out that array
+          post.likes.splice(removeindex, 1);
+
+          post
+            .save()
+            .then(post => res.json(post))
+            .catch(err => res.status(400).json(err));
+        })
+        .catch(err => res.status(400).json(err));
+    });
+  }
+);
+
 module.exports = router;
