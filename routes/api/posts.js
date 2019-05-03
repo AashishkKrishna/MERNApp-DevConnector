@@ -154,4 +154,68 @@ router.post(
   }
 );
 
+// @route   POST api/post/comment/:id
+// @desc    Comment the post
+// @access  Private
+router.post(
+  "/comment/:id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Profile.findOne({ user: req.user.id }).then(profile => {
+      Post.findById(req.params.id)
+        .then(post => {
+          const comment = {
+            text: req.body.text,
+            name: req.body.name,
+            avatar: req.body.avatar,
+            user: req.user.id
+          };
+
+          post.comments.unshift(comment);
+
+          post
+            .save()
+            .then(post => res.json(post))
+            .catch(err => res.status(400).json(err));
+        })
+        .catch(err => res.status(400).json(err));
+    });
+  }
+);
+
+// @route   Delete api/post/comment/:id
+// @desc    Delete the comment on the post
+// @access  Private
+router.delete(
+  "/comment/:id/:comment_id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Profile.findOne({ user: req.user.id }).then(profile => {
+      Post.findById(req.params.id)
+        .then(post => {
+          if (
+            post.comments.filter(item => item.id === req.params.comment_id)
+              .length === 0
+          ) {
+            return res
+              .status(400)
+              .json({ commentnotexists: "Comment does not exists" });
+          }
+
+          const removeindex = post.comments
+            .map(item => item._id.toString())
+            .indexOf(req.params.comment_id);
+
+          post.comments.splice(removeindex, 1);
+
+          post
+            .save()
+            .then(post => res.json(post))
+            .catch(err => res.status(400).json(err));
+        })
+        .catch(err => res.status(400).json(err));
+    });
+  }
+);
+
 module.exports = router;
