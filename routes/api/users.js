@@ -27,10 +27,10 @@ router.get("/test", (req, res) => {
 // @desc    : Register a user
 // @access  : Public
 router.post("/register", (req, res) => {
-  const { errors, isvalid } = validateRegisterInput(req.body);
+  const { errors, isValid } = validateRegisterInput(req.body);
 
   //Check validation
-  if (!isvalid) {
+  if (!isValid) {
     return res.status(400).json(errors);
   }
 
